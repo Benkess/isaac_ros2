@@ -67,6 +67,17 @@ sudo chown -R root:isaac /var/cache/isaac /persistent/isaac
 sudo chmod -R 2775 /var/cache/isaac /persistent/isaac
 ```
 
+
+## Building the Container
+
+```bash
+# Build with default Isaac Sim 4.5.0
+apptainer build /containers/isaac_ros2_humble.sif IsaacROS2.def
+
+# Build with a specific Isaac Sim version
+apptainer build --build-arg ISAAC_VERSION=5.0.0 /containers/isaac_ros2_humble.sif IsaacROS2.def
+```
+
 ## Troubleshooting
 
 ### Common Issues
