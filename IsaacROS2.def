@@ -22,9 +22,10 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     && locale-gen en_US.UTF-8 \
     && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
-    # --- Add ROS 2 Humble apt repository ---
-    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
-    echo "deb [arch=$(dpkg --print-architecture)] \
+    # --- Add ROS 2 Humble apt repository (modern approach) ---
+    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc \
+      | gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
       http://packages.ros.org/ros2/ubuntu \
       $(lsb_release -cs) main" \
       > /etc/apt/sources.list.d/ros2.list
@@ -41,6 +42,7 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     # Source ROS 2, then launch Isaac Sim with the ROS 2 bridge
     exec /bin/bash -lc "\
       source $ROS_SETUP && \
+      cd /isaac-sim && \
       ./isaac-sim.sh \
         --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge \
         \"\$@\""
