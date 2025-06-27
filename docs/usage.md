@@ -91,6 +91,7 @@ apptainer exec --nv --contain \
   --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
   --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
+  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif \
   /bin/bash -lc " \
     source /opt/ros/humble/setup.bash && \
