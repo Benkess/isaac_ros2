@@ -38,9 +38,12 @@ Create these directories on your host system:
 sudo mkdir -p /containers
 sudo chmod 755 /containers
 
-# Cache directories (critical for performance)
-sudo mkdir -p /var/cache/isaac/kit /var/cache/isaac/ov
-sudo chmod -R 755 /var/cache/isaac
+# Create all the cache directories you'll bind into the container
+sudo mkdir -p /var/cache/isaac/{kit,ov,pip,glcache,computecache,logs,data}
+
+# Give the isaac group ownership and group-writable perms
+sudo chown -R root:isaac /var/cache/isaac
+sudo chmod -R 2775 /var/cache/isaac
 
 # Persistent asset root (optional but recommended)
 sudo mkdir -p /persistent/isaac/asset_root

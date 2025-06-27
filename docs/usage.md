@@ -4,6 +4,25 @@ This guide covers various usage scenarios for users.
 
 ## Launch Modes
 
+### Interactive Bash in the Container
+
+```bash
+apptainer shell --nv --contain \
+  --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
+  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
+  --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
+  --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
+  --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
+  --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
+  --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
+  --bind /projects:/root/Documents:rw \
+  /containers/isaac-sim.sif
+```
+- --nv enables NVIDIA GPU support.
+- --cleanenv avoids inheriting unwanted host variables.
+- Each --bind maps a host cache or data dir into the container.
+- Once inside, you’re at / and can run ./isaac-sim.sh or any CLI.
+
 ### GUI Mode (Local Development)
 
 For local development with Isaac Sim's graphical interface:
