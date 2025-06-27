@@ -13,13 +13,17 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     export ROS_SETUP=/opt/ros/$ROS_DISTRO/setup.bash
 
 %post
+    # Fix package conflicts and install base packages
     apt-get update && apt-get install -y \
-      curl gnupg2 gnupg lsb-release software-properties-common \
+      curl gnupg gnupg2 lsb-release software-properties-common \
       python3-pip python3-venv \
       locales build-essential \
-      libfreetype6-dev libfontconfig1-dev \
     && locale-gen en_US.UTF-8 \
     && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+    
+    # Install font/graphics dependencies after base setup
+    apt-get install -y \
+      libfreetype6-dev libfontconfig1-dev
 
     # Add ROS 2 Humble repo
     curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc \
