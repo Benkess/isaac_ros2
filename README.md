@@ -106,17 +106,31 @@ Combine with overlays to maintain separate environments for different projects.
 Create these directories on your host system **before** first running the container:
 
 ```bash
-# Create container and cache directories
+# Container image store
 sudo mkdir -p /containers
-sudo mkdir -p /var/cache/isaac/kit /var/cache/isaac/ov
-sudo mkdir -p /persistent/isaac/asset_root
+sudo chown root:isaac /containers
+sudo chmod 755 /containers
 
-# Set proper permissions for cache directories (optional isaac group)
-sudo chown root:isaac /var/cache/isaac/{kit,ov} 2>/dev/null || sudo chown -R $USER /var/cache/isaac
-sudo chmod 2775 /var/cache/isaac/{kit,ov} 2>/dev/null || sudo chmod -R 755 /var/cache/isaac
+# Shared project root (optional)
+sudo mkdir -p /projects
+sudo chown root:isaac /projects
+sudo chmod 2775 /projects
+
+# Cache directories for Isaac Sim
+sudo mkdir -p /var/cache/isaac/kit /var/cache/isaac/ov
+sudo chown root:isaac /var/cache/isaac/{kit,ov} 2>/dev/null \
+  || sudo chown -R $USER /var/cache/isaac
+sudo chmod 2775 /var/cache/isaac/{kit,ov} 2>/dev/null \
+  || sudo chmod -R 755 /var/cache/isaac
+
+# Persistent Omniverse Nucleus root (optional)
+sudo mkdir -p /persistent/isaac/asset_root
+sudo chown root:isaac /persistent/isaac/asset_root
+sudo chmod 2775 /persistent/isaac/asset_root
 ```
 
-**Note**: These directories must exist on the host system and are bind-mounted into the container at runtime. They are not created inside the container since they live outside the SIF file.
+> **Note:** These directories must exist on the host system and are bind-mounted into the container at runtime. They are not created inside the SIF file, since they live outside of the container image.
+
 
 ## Tips
 
