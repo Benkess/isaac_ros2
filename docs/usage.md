@@ -68,6 +68,7 @@ apptainer exec --nv --contain \
   --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
   --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
+  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif \
   /bin/bash -lc " \
     source /opt/ros/humble/setup.bash && \
@@ -94,7 +95,7 @@ apptainer exec --nv --contain \
   /bin/bash -lc " \
     source /opt/ros/humble/setup.bash && \
     cd /isaac-sim && \
-    ./isaac-sim.sh --webrtc_server=0.0.0.0 --webrtc_port=9090 \
+    ./isaac-sim.sh --webrtc_server=128.143.69.60 --webrtc_port=9090 \
   "
 ```
 
