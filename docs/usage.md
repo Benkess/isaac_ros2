@@ -8,7 +8,7 @@ This guide covers various usage scenarios for users.
 
 ```bash
 apptainer shell --nv --contain \
-  --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
+  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
   --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
   --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
   --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
@@ -16,7 +16,7 @@ apptainer shell --nv --contain \
   --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
   --bind /projects:/root/Documents:rw \
-  /containers/isaac-sim.sif
+  /containers/isaac_ros2_humble.sif
 ```
 - --nv enables NVIDIA GPU support.
 - --cleanenv avoids inheriting unwanted host variables.
