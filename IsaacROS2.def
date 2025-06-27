@@ -17,6 +17,7 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
       curl gnupg2 gnupg lsb-release software-properties-common \
       python3-pip python3-venv \
       locales build-essential \
+      libfreetype6-dev libfontconfig1-dev \
     && locale-gen en_US.UTF-8 \
     && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
