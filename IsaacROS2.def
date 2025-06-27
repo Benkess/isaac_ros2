@@ -20,14 +20,6 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
       locales build-essential \
     && locale-gen en_US.UTF-8 \
     && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
-    
-    # Fix package conflicts by installing specific versions or removing conflicting repos
-    apt-get update && apt-get install -y \
-      --fix-broken \
-      --no-install-recommends \
-      libfreetype6-dev libfontconfig1-dev || \
-    (apt-get install -y --fix-broken && \
-     apt-get install -y --no-install-recommends libfreetype6-dev libfontconfig1-dev)
 
     # Add ROS 2 Humble repo
     curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc \
