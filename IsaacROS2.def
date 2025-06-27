@@ -5,7 +5,6 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     ISAAC_VERSION=4.5.0
 
 %environment
-    # Isaac Sim settings
     export ACCEPT_EULA=Y
     export PRIVACY_CONSENT=Y
     export ROS_DISTRO=humble
@@ -14,7 +13,6 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     export ROS_SETUP=/opt/ros/$ROS_DISTRO/setup.bash
 
 %post
-    # --- System prep + UTF-8 locale ---
     apt-get update && apt-get install -y \
       curl gnupg2 lsb-release software-properties-common \
       python3-pip python3-venv python3-colcon-common-extensions \
@@ -22,7 +20,7 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     && locale-gen en_US.UTF-8 \
     && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
-    # --- Add ROS 2 Humble apt repository (modern approach) ---
+    # Add ROS 2 Humble repo
     curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc \
       | gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
@@ -30,18 +28,16 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
       $(lsb_release -cs) main" \
       > /etc/apt/sources.list.d/ros2.list
 
-    # --- Install ROS 2 Humble Desktop (RViz, demos) + dev tools ---
+    # Install ROS 2 Humble desktop
     apt-get update && apt-get install -y \
         ros-humble-desktop \
         ros-dev-tools
 
-    # --- Clean up ---
     rm -rf /var/lib/apt/lists/*
 
 %runscript
-    # Source ROS 2, then launch Isaac Sim with the ROS 2 bridge
     exec /bin/bash -lc "\
-      source $ROS_SETUP && \
+      source \$ROS_SETUP && \
       cd /isaac-sim && \
       ./isaac-sim.sh \
         --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge \
@@ -56,6 +52,8 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
       • Isaac Sim & Omniverse Runtime
       • Python & NVIDIA SDKs
       • ROS 2 Humble Desktop (RViz, demos, ros2 CLI)
+    Use `--overlay` to inject project‐specific packages, and `--headless` 
+    or WebRTC flags for remote simulation.
     Usage example:
       apptainer exec --nv \
         --overlay ~/projects/projectX/overlay.img \
