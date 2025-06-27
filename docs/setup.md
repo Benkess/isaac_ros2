@@ -218,6 +218,21 @@ To add your own ROS 2 packages:
 3. **Selective building:** `colcon build --packages-select package_name`
 4. **Cache directories:** Always bind mount cache directories to avoid re-downloading
 
+### Installing Additional ROS 2 Packages
+
+The container includes ROS 2 Humble Base. To add GUI tools like RViz:
+
+```bash
+# Inside the container
+apt-get update && apt-get install -y \
+  ros-humble-rviz2 \
+  ros-humble-rqt \
+  ros-humble-demo-nodes-cpp \
+  ros-humble-demo-nodes-py
+
+# Or install via overlays for persistence
+```
+
 ## Next Steps
 
 - Explore the Isaac Sim ROS 2 examples in the workspace

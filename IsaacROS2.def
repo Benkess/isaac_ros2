@@ -29,11 +29,16 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
       $(lsb_release -cs) main" \
       > /etc/apt/sources.list.d/ros2.list
 
-    # Install ROS 2 Humble desktop
+    # Install ROS 2 Humble base packages (avoid desktop GUI conflicts)
     apt-get update && apt-get install -y \
-        ros-humble-desktop \
+        ros-humble-ros-base \
+        ros-humble-ros2bag \
+        ros-humble-rosbag2 \
         ros-dev-tools \
-        python3-colcon-common-extensions
+        python3-colcon-common-extensions \
+        ros-humble-tf2-tools \
+        ros-humble-robot-state-publisher \
+        ros-humble-joint-state-publisher
 
     rm -rf /var/lib/apt/lists/*
 
@@ -53,7 +58,7 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     This container bundles:
       • Isaac Sim & Omniverse Runtime
       • Python & NVIDIA SDKs
-      • ROS 2 Humble Desktop (RViz, demos, ros2 CLI)
+      • ROS 2 Humble Base (ros2 CLI, bags, tf2)
     Use `--overlay` to inject project‐specific packages, and `--headless` 
     or WebRTC flags for remote simulation.
     Usage example:
