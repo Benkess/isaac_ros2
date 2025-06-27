@@ -1,34 +1,64 @@
 Bootstrap: docker
-From: nvcr.io/nvidia/isaac-sim:{{ ISAAC_VERSION }}
+From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
 
 %arguments
     ISAAC_VERSION=4.5.0
 
 %environment
+    # Isaac Sim settings
+    export ACCEPT_EULA=Y
+    export PRIVACY_CONSENT=Y
     export ROS_DISTRO=humble
     export LD_LIBRARY_PATH=/exts/isaacsim.ros2.bridge/humble/lib:$LD_LIBRARY_PATH
     export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
+    export ROS_SETUP=/opt/ros/$ROS_DISTRO/setup.bash
 
 %post
-    # Ensure Debian package lists are up to date
-    apt-get update && \
-    # Install ROS 2 Humble core packages for CLI tools and bridge support
-    apt-get install -y ros-humble-ros-base && \
-    # Clean up
+    # --- System prep + UTF-8 locale ---
+    apt-get update && apt-get install -y \
+      curl gnupg2 lsb-release software-properties-common \
+      python3-pip python3-venv python3-colcon-common-extensions \
+      locales build-essential \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+    # --- Add ROS 2 Humble apt repository ---
+    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+    echo "deb [arch=$(dpkg --print-architecture)] \
+      http://packages.ros.org/ros2/ubuntu \
+      $(lsb_release -cs) main" \
+      > /etc/apt/sources.list.d/ros2.list
+
+    # --- Install ROS 2 Humble Desktop (RViz, demos) + dev tools ---
+    apt-get update && apt-get install -y \
+        ros-humble-desktop \
+        ros-dev-tools
+
+    # --- Clean up ---
     rm -rf /var/lib/apt/lists/*
 
 %runscript
-    # By default launch Isaac Sim in GUI mode with the ROS 2 bridge
+    # Source ROS 2, then launch Isaac Sim with the ROS 2 bridge
     exec /bin/bash -lc "\
+      source $ROS_SETUP && \
       ./isaac-sim.sh \
         --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge \
         \"\$@\""
 
 %labels
-    Author   mxk3rz
-    Version  v0.0.0
-    Ext3Overlay True
+    Maintainer mxk3rz
+    Version v0.2
 
 %help
-    This container bundles Isaac Sim, Omniverse Runtime,
-    Python, NVIDIA SDKs, and ROS 2 Humble for headless and GUI use.
+    This container bundles:
+      • Isaac Sim & Omniverse Runtime
+      • Python & NVIDIA SDKs
+      • ROS 2 Humble Desktop (RViz, demos, ros2 CLI)
+    Usage example:
+      apptainer exec --nv \
+        --overlay ~/projects/projectX/overlay.img \
+        --bind ~/projects/projectX:/home/dev/project \
+        --bind ~/cache/kit:/isaac-sim/kit/cache:rw \
+        --bind ~/cache/ov:/root/.cache/ov:rw \
+        isaac_ros2_humble.sif \
+        --headless
