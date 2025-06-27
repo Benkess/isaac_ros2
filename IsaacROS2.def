@@ -1,56 +1,34 @@
-BootStrap: docker
-From: ubuntu:{{ UBUNTU_VER }}
+Bootstrap: docker
+From: nvcr.io/nvidia/isaac-sim:{{ ISAAC_VERSION }}
 
 %arguments
-    UBUNTU_VER=22.04
-
-%labels
-    Maintainer mxk3rz
-    Version     1.0
+    ISAAC_VERSION=4.5.0
 
 %environment
-    export LANG=C.UTF-8
     export ROS_DISTRO=humble
+    export LD_LIBRARY_PATH=/exts/isaacsim.ros2.bridge/humble/lib:$LD_LIBRARY_PATH
+    export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
 
 %post
-    # 1) Install system deps
-    apt-get update && apt-get install -y \
-      python3-pip \
-      git \
-      curl \
-      lsb-release \
-      sudo \
-      wget \
-      ca-certificates
-
-    # 2) Install ROS 2 Humble
-    mkdir -p /etc/apt/keyrings \
-      && curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
-         | gpg --dearmor -o /etc/apt/keyrings/ros-archive-keyring.gpg \
-      && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/ros-archive-keyring.gpg] \
-           http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" \
-         > /etc/apt/sources.list.d/ros2.list \
-      && apt-get update \
-      && apt-get install -y ros-humble-desktop
-
-    # 3) Install NVIDIA SDKs & Omniverse / Isaac Sim prerequisites
-    #    (Adjust versions/paths per your lab’s standard build)
-    apt-get install -y \
-      nvidia-cuda-toolkit \
-      libvulkan1 \
-      vulkan-utils \
-      bspatch
-
-    # 4) Download & install Isaac Sim
-    #    (You might choose to copy an existing tarball into the build context
-    #     or wget from your internal server here.)
-    wget -qO- https://internal.lab/isaac/isaac-sim.tar.gz \
-      | tar xz -C /opt/isaac-sim
-
-    # 5) Clean up
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    # Ensure Debian package lists are up to date
+    apt-get update && \
+    # Install ROS 2 Humble core packages for CLI tools and bridge support
+    apt-get install -y ros-humble-ros-base && \
+    # Clean up
+    rm -rf /var/lib/apt/lists/*
 
 %runscript
-    # This runs when you do `apptainer exec my.sif ...`
-    export LD_LIBRARY_PATH=/opt/isaac-sim/lib:$LD_LIBRARY_PATH
-    exec "$@"
+    # By default launch Isaac Sim in GUI mode with the ROS 2 bridge
+    exec /bin/bash -lc "\
+      ./isaac-sim.sh \
+        --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge \
+        \"\$@\""
+
+%labels
+    Author   mxk3rz
+    Version  v0.0.0
+    Ext3Overlay True
+
+%help
+    This container bundles Isaac Sim, Omniverse Runtime,
+    Python, NVIDIA SDKs, and ROS 2 Humble for headless and GUI use.
