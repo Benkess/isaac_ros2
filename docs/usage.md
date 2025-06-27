@@ -3,7 +3,10 @@
 This guide covers various usage scenarios for users.
 
 ## Launch Modes
-
+> Notes:
+> - All host-side dirs (/var/cache/isaac/..., /projects, etc.) should exist before you run these commands.
+> - Your container already has EULA acceptance built-in via environment variables.
+> - The same container can run headless, GUI, or WebRTC sessions with ROS 2 integration.
 ### Interactive Bash in the Container
 
 ```bash
@@ -23,6 +26,11 @@ apptainer shell --nv --contain \
 - Each --bind maps a host cache or data dir into the container.
 - Once inside, you’re at / and can run ./isaac-sim.sh or any CLI.
 
+```bash
+cd /isaac-sim
+./isaac-sim.sh
+```
+
 ### GUI Mode (Local Development)
 
 For local development with Isaac Sim's graphical interface:
@@ -31,6 +39,12 @@ For local development with Isaac Sim's graphical interface:
 apptainer exec --nv --contain \
   --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
   --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
+  --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
+  --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
+  --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
+  --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
+  --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
+  --bind /projects:/root/Documents:rw \
   --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   --bind /tmp/.X11-unix:/tmp/.X11-unix \
   --env DISPLAY=$DISPLAY \
@@ -45,9 +59,17 @@ For headless operation on servers or remote machines:
 apptainer exec --nv --contain \
   --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
   --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
-  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
+  --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
+  --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
+  --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
+  --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
+  --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
   /containers/isaac_ros2_humble.sif \
-  --headless
+  /bin/bash -lc " \
+    source /opt/ros/humble/setup.bash && \
+    cd /isaac-sim && \
+    ./isaac-sim.sh --headless \
+  "
 ```
 
 ### WebRTC Mode (Remote Access)

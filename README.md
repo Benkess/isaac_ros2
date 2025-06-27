@@ -20,10 +20,10 @@ See [Usage Examples](docs/usage.md) for launch modes.
 - NVIDIA GPU with compatible drivers
 - Apptainer installed
 > **Note:** on the UVA CS server Apptainer is installed as a module. Use: 
-```bash
-source /etc/profile.d/modules.sh
-module load aptainer
-```
+> ```bash
+> source /etc/profile.d/modules.sh
+> module load aptainer
+> ```
 
 ## Tips
 1. **Host Directory Setup**: Always create the required host directories before first use
