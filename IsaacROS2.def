@@ -13,6 +13,11 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     export ROS_SETUP=/opt/ros/$ROS_DISTRO/setup.bash
 
 %post
+    # Set non-interactive mode and timezone
+    export DEBIAN_FRONTEND=noninteractive
+    export TZ=America/New_York
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    
     # Fix package conflicts and install base packages
     apt-get update && apt-get install -y \
       curl gnupg gnupg2 lsb-release software-properties-common \
