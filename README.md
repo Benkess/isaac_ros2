@@ -22,7 +22,7 @@ See [Usage Examples](docs/usage.md) for launch modes.
 > **Note:** on the UVA CS server Apptainer is installed as a module. Use: 
 > ```bash
 > source /etc/profile.d/modules.sh
-> module load aptainer
+> module load apptainer
 > ```
 
 ## Tips
