@@ -1,49 +1,61 @@
 # Usage Guide
 
-This guide covers various usage scenarios for users.
+This guide covers how to use the Isaac Sim container.
 
-> **Note:** on the UVA CS server Apptainer is installed as a module. Use: 
+> **Note:** on the UVA CS server Apptainer is installed as a module. Load it with:
+>
 > ```bash
 > source /etc/profile.d/modules.sh
 > module load apptainer
 > ```
 
+---
+
 ## Launch Modes
 This section lists different ways of launching Isaac Sim. These commands are designed to be exicuted from the terminal in any directory on the host system.
 
-> Notes:
-> - All commands assume the system admin setup this module according to **[Host Setup Guide](/docs/host_setup.md)**.
-> - All host-side dirs (/var/cache/isaac/..., /projects, etc.) should exist before you run these commands.
-> - Your container already has EULA acceptance built-in via environment variables.
-> - The same container can run headless, GUI, or WebRTC sessions with ROS 2 integration.
-> - Isaac Sim may take a while to load on startup.
+> Note: 
+> See **[Run Launch Script](/docs/script_docs/isaac_container.md)** for an automated script of these commands.
 
-### Interactive Bash in the Container
+> Note: 
+> These commands assume host setup has been completed by the admin as per the **[Host Setup Guide](/docs/host_setup.md)**.
+
+### Notes
+
+* Host-side directories (`/var/cache/isaac/...`, `/projects`, etc.) must exist.
+* You must belong to the `isaac` group.
+* The container includes environment variables for EULA and data consent.
+* Isaac Sim can run in headless, GUI, or WebRTC modes with ROS 2 integration.
+
+---
+
+### Interactive Bash Session
 This workflow allows you to interact with Isaac Sim similarly to the docs on thier website.
 
 ```bash
 apptainer shell --nv --contain \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
-  --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
-  --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
-  --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
-  --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
-  --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
-  --bind /projects:/root/Documents:rw \
+  --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
+  --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
+  --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
+  --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
+  --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
+  --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
+  --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
+  --bind /projects:$HOME/Documents:rw \
+  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif
 ```
-- --nv enables NVIDIA GPU support.
-- --cleanenv avoids inheriting unwanted host variables.
-- Each --bind maps a host cache or data dir into the container.
-- Once inside, you’re at / and can run ./isaac-sim.sh or any CLI.
+
+Once inside:
 
 ```bash
 cd /isaac-sim
 ./isaac-sim.sh
 ```
 
-### Local GUI Mode (X11)
+---
+
+### Local GUI Mode (X11 Forwarding)
 
 For local development with Isaac Sim's graphical interface:
 
@@ -51,21 +63,19 @@ For local development with Isaac Sim's graphical interface:
 apptainer exec --nv --contain \
   --bind /tmp/.X11-unix:/tmp/.X11-unix \
   --env DISPLAY=$DISPLAY \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
-  --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
-  --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
-  --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
-  --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
-  --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
+  --bind /var/cache/isaac/kit:$HOME/.cache/kit:rw \
+  --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
+  --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
+  --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
+  --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
+  --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
+  --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
   --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif \
-  /bin/bash -lc " \
-    source /opt/ros/humble/setup.bash && \
-    cd /isaac-sim && \
-    ./isaac-sim.sh \
-  "
+  /bin/bash -lc "cd /isaac-sim && ./isaac-sim.sh"
 ```
+
+---
 
 ### Headless Mode (Servers/Remote)
 
@@ -73,20 +83,18 @@ For headless operation on servers or remote machines:
 
 ```bash
 apptainer exec --nv --contain \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
-  --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
-  --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
-  --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
-  --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
-  --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
+  --bind /var/cache/isaac/kit:$HOME/.cache/kit:rw \
+  --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
+  --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
+  --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
+  --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
+  --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
+  --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
   /containers/isaac_ros2_humble.sif \
-  /bin/bash -lc " \
-    source /opt/ros/humble/setup.bash && \
-    cd /isaac-sim && \
-    ./isaac-sim.sh --headless \
-  "
+  /bin/bash -lc "cd /isaac-sim && ./isaac-sim.sh --headless"
 ```
+
+---
 
 ### Remote GUI Mode (WebRTC)
 
@@ -98,43 +106,40 @@ For remote access via web browser:
 ```bash
 apptainer exec --nv --contain \
   --env WEBRTC_ENABLE=1 \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
-  --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
-  --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
-  --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
-  --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
-  --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
+  --bind /var/cache/isaac/kit:$HOME/.cache/kit:rw \
+  --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
+  --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
+  --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
+  --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
+  --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
+  --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
   --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif \
-  /bin/bash -lc " \
-    source /opt/ros/humble/setup.bash && \
-    cd /isaac-sim && \
-    ./isaac-sim.sh --webrtc_server=128.143.69.60 --webrtc_port=9090 \
-  "
+  /bin/bash -lc "cd /isaac-sim && ./isaac-sim.sh --webrtc_server=128.143.69.60 --webrtc_port=9090"
 ```
 
-Then access via browser at `http://localhost:9090`.
+Access from browser:
 
-### ROS2 Integration
-Your container includes ROS 2 Humble. To verify ROS 2 is working:
+```
+http://128.143.69.60:9090
+```
+
+---
+
+## ROS 2 Integration
+
+Test ROS 2 CLI:
+
 ```bash
 apptainer exec --nv --contain \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
+  --bind /var/cache/isaac/kit:$HOME/.cache/kit:rw \
+  --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
   /containers/isaac_ros2_humble.sif \
-  /bin/bash -lc " \
-    source /opt/ros/humble/setup.bash && \
-    ros2 topic list \
-  "
+  /bin/bash -lc "source /opt/ros/humble/setup.bash && ros2 topic list"
 ```
 
-### Connecting to an External Nucleus Server (optional)
-If you have your own Nucleus enterprise instance, add:
-```bash
---bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
---env ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
-```
+---
+
 ## Working with Overlays
 
 ### Creating Overlays
@@ -152,8 +157,8 @@ mkfs.ext3 /projects/my-project.img
 ```bash
 apptainer exec --nv --contain \
   --overlay /projects/my-project.img \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
+  --bind /var/cache/isaac/kit:$HOME/.cache/kit:rw \
+  --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
   --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif
 ```
@@ -170,6 +175,8 @@ apt-get update && apt-get install -y \
 # Packages will persist in the overlay
 ```
 
+---
+
 ## Project Integration
 
 ### Binding Project Directories
@@ -179,8 +186,8 @@ Bind your project directories for development:
 ```bash
 apptainer exec --nv --contain \
   --bind /projects/my_robot_project:/workspace:rw \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
+  --bind /var/cache/isaac/kit:$HOME/.cache/kit:rw \
+  --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
   --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif \
   bash

@@ -2,6 +2,8 @@
 
 This describes the user setup process for this package. **Normal users should start here.** All commands should be run in a terminal window.
 
+> Note: These docs are located at /localtmp/isaac_ros2/ on the lab computer.
+
 ---
 
 ## Accessing the Lab Computer on the UVA CS Server
@@ -63,6 +65,7 @@ Users must do the following to use the container:
 
 For usage guidance, check out:
 
+* **[Run Launch Script](/docs/script_docs/isaac_container.md)** — Automated commands for launching Isaac Sim
 * **[Usage Examples](/docs/usage.md)** — GUI mode, WebRTC, overlays, troubleshooting
 * **[Humble WS](/docs/Isaac_Sim_humble_ws.md)** — Isaac Sim ROS2 tutorials
 
