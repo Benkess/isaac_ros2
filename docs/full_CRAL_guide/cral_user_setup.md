@@ -50,6 +50,15 @@ On the UVA CS Server Apptainer is a module. It is needed to use Isaac Sim. Follo
    module load apptainer
    ```
 
+## Isaac Container Setup
+Users must do the following to use the container:
+1. Get permission:
+    
+    Currently only the group isaac has the needed permissions. Ask someone with sudo access to add you or add yourself. 
+    ```bash
+    sudo usermod -a -G isaac $USER
+    ```
+
 ## Next Steps
 
 For usage guidance, check out:

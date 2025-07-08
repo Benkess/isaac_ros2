@@ -2,13 +2,24 @@
 
 This guide covers various usage scenarios for users.
 
+> **Note:** on the UVA CS server Apptainer is installed as a module. Use: 
+> ```bash
+> source /etc/profile.d/modules.sh
+> module load apptainer
+> ```
+
 ## Launch Modes
+This section lists different ways of launching Isaac Sim. These commands are designed to be exicuted from the terminal in any directory on the host system.
+
 > Notes:
+> - All commands assume the system admin setup this module according to **[Host Setup Guide](/docs/host_setup.md)**.
 > - All host-side dirs (/var/cache/isaac/..., /projects, etc.) should exist before you run these commands.
 > - Your container already has EULA acceptance built-in via environment variables.
 > - The same container can run headless, GUI, or WebRTC sessions with ROS 2 integration.
+> - Isaac Sim may take a while to load on startup.
 
 ### Interactive Bash in the Container
+This workflow allows you to interact with Isaac Sim similarly to the docs on thier website.
 
 ```bash
 apptainer shell --nv --contain \
@@ -30,27 +41,6 @@ apptainer shell --nv --contain \
 ```bash
 cd /isaac-sim
 ./isaac-sim.sh
-```
-
-### Headless Mode (Servers/Remote)
-
-For headless operation on servers or remote machines:
-
-```bash
-apptainer exec --nv --contain \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
-  --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
-  --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
-  --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
-  --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
-  --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
-  /containers/isaac_ros2_humble.sif \
-  /bin/bash -lc " \
-    source /opt/ros/humble/setup.bash && \
-    cd /isaac-sim && \
-    ./isaac-sim.sh --headless \
-  "
 ```
 
 ### Local GUI Mode (X11)
@@ -77,7 +67,31 @@ apptainer exec --nv --contain \
   "
 ```
 
+### Headless Mode (Servers/Remote)
+
+For headless operation on servers or remote machines:
+
+```bash
+apptainer exec --nv --contain \
+  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
+  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
+  --bind /var/cache/isaac/pip:/root/.cache/pip:rw \
+  --bind /var/cache/isaac/glcache:/root/.cache/nvidia/GLCache:rw \
+  --bind /var/cache/isaac/computecache:/root/.nv/ComputeCache:rw \
+  --bind /var/cache/isaac/logs:/root/.nvidia-omniverse/logs:rw \
+  --bind /var/cache/isaac/data:/root/.local/share/ov/data:rw \
+  /containers/isaac_ros2_humble.sif \
+  /bin/bash -lc " \
+    source /opt/ros/humble/setup.bash && \
+    cd /isaac-sim && \
+    ./isaac-sim.sh --headless \
+  "
+```
+
 ### Remote GUI Mode (WebRTC)
+
+> Note:
+> This mode is not yet working on the UVA CS Server
 
 For remote access via web browser:
 
@@ -100,7 +114,7 @@ apptainer exec --nv --contain \
   "
 ```
 
-Then access via browser at `http://localhost:9090`
+Then access via browser at `http://localhost:9090`.
 
 ### ROS2 Integration
 Your container includes ROS 2 Humble. To verify ROS 2 is working:

@@ -12,7 +12,7 @@ See [Usage Examples](docs/usage.md) for launch modes.
 - Development tools (colcon, pip)
 
 ## Documentation
-- **[Complete Setup Guide](docs/host_setup.md)** - ROS 2 workspace integration, development workflow
+- **[Host Setup Guide](docs/host_setup.md)** - One time package setup guide for admin.
 - **[Usage Examples](docs/usage.md)** - GUI mode, WebRTC, overlays, troubleshooting
 - **[Humble WS](docs/Isaac_Sim_humble_ws.md)** - Isaac Sim ROS2 Tutorials
 
