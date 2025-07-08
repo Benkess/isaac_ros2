@@ -38,6 +38,29 @@ The CRAL lab computer is hosted on the UVA CS Server. First, log in to the serve
 
 ---
 
+## X11 setup
+X11 may not work by default. To test you can run:
+```bash
+xclock
+```
+
+If that does not work then run these:
+```bash
+ls /tmp/.X11-unix
+echo $DISPLAY
+```
+They should match (ex: "X1" and ":1")
+
+You can fix them with:
+```bash
+export DISPLAY=:1
+```
+
+Finally, you can give yourself permissions with:
+```bash
+xhost +SI:localuser:$USER
+```
+
 ## Apptainer Module
 On the UVA CS Server Apptainer is a module. It is needed to use Isaac Sim. Follow these steps to load Apptainer:
 1. Source module setup if needed:
