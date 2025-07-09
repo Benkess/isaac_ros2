@@ -72,8 +72,9 @@ apptainer shell --nv --contain \
   --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
   --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
+  --bind /projects:$HOME/Documents:rw \
+  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   --overlay /projects/tutorials/isaac_ros_overlay.img \
-  --bind    /projects/tutorials/IsaacSim-ros_workspaces:/home/dev/ros_ws:rw \
   /containers/isaac_ros2_humble.sif
 ```
 
@@ -81,7 +82,7 @@ Inside the container, run:
 
 ```bash
 source /opt/ros/humble/setup.bash
-cd /home/dev/ros_ws/humble_ws
+cd ~/Documents/tutorials/IsaacSim-ros_workspaces/humble_ws
 rosdep update
 rosdep install -i --from-path src --rosdistro humble -y
 colcon build --event-handlers console_direct+
@@ -93,6 +94,8 @@ echo "Workspace built and sourced"
 
 ```bash
 apptainer exec --nv --contain \
+  --bind /tmp/.X11-unix:/tmp/.X11-unix \
+  --env DISPLAY=$DISPLAY \
   --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
   --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
   --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
@@ -100,12 +103,13 @@ apptainer exec --nv --contain \
   --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
   --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
+  --bind /projects:$HOME/Documents:rw \
+  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   --overlay /projects/tutorials/isaac_ros_overlay.img \
-  --bind    /projects/tutorials/IsaacSim-ros_workspaces:/home/dev/ros_ws:rw \
   /containers/isaac_ros2_humble.sif \
   /bin/bash -lc "\
     source /opt/ros/humble/setup.bash && \
-    cd /home/dev/ros_ws/humble_ws && \
+    cd ~/Documents/tutorials/IsaacSim-ros_workspaces/humble_ws && \
     rosdep update && \
     rosdep install -i --from-path src --rosdistro humble -y && \
     colcon build --event-handlers console_direct+ && \
@@ -122,7 +126,6 @@ apptainer exec --nv --contain \
 
 ```bash
 apptainer shell --nv --contain \
-  --overlay /projects/tutorials/isaac_ros_overlay.img \
   --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
   --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
   --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
@@ -130,9 +133,9 @@ apptainer shell --nv --contain \
   --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
   --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
-  --bind    /projects/tutorials/IsaacSim-ros_workspaces:/home/dev/ros_ws:rw \
-  --bind    /tmp/.X11-unix:/tmp/.X11-unix \
-  --env     DISPLAY=$DISPLAY \
+  --bind /projects:$HOME/Documents:rw \
+  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
+  --overlay /projects/tutorials/isaac_ros_overlay.img \
   /containers/isaac_ros2_humble.sif
 ```
 
@@ -140,7 +143,7 @@ Inside the container, run:
 
 ```bash
 source /opt/ros/humble/setup.bash
-source /home/dev/ros_ws/humble_ws/install/local_setup.bash
+source ~/Documents/tutorials/IsaacSim-ros_workspaces/humble_ws/install/local_setup.bash
 cd /isaac-sim
 ./isaac-sim.sh --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge
 ```
@@ -149,7 +152,8 @@ cd /isaac-sim
 
 ```bash
 apptainer exec --nv --contain \
-  --overlay /projects/tutorials/isaac_ros_overlay.img \
+  --bind /tmp/.X11-unix:/tmp/.X11-unix \
+  --env DISPLAY=$DISPLAY \
   --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
   --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
   --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
@@ -157,13 +161,13 @@ apptainer exec --nv --contain \
   --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
   --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
-  --bind    /projects/tutorials/IsaacSim-ros_workspaces:/home/dev/ros_ws:rw \
-  --bind    /tmp/.X11-unix:/tmp/.X11-unix \
-  --env     DISPLAY=$DISPLAY \
+  --bind /projects:$HOME/Documents:rw \
+  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
+  --overlay /projects/tutorials/isaac_ros_overlay.img \
   /containers/isaac_ros2_humble.sif \
   /bin/bash -lc "\
     source /opt/ros/humble/setup.bash && \
-    source /home/dev/ros_ws/humble_ws/install/local_setup.bash && \
+    source ~/Documents/tutorials/IsaacSim-ros_workspaces/humble_ws/install/local_setup.bash && \
     cd /isaac-sim && \
     ./isaac-sim.sh --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge\
   "
