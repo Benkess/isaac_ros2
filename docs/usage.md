@@ -63,13 +63,14 @@ For local development with Isaac Sim's graphical interface:
 apptainer exec --nv --contain \
   --bind /tmp/.X11-unix:/tmp/.X11-unix \
   --env DISPLAY=$DISPLAY \
-  --bind /var/cache/isaac/kit:$HOME/.cache/kit:rw \
+  --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
   --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
   --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
   --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
   --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
   --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
+  --bind /projects:$HOME/Documents:rw \
   --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif \
   /bin/bash -lc "cd /isaac-sim && ./isaac-sim.sh"
@@ -83,13 +84,15 @@ For headless operation on servers or remote machines:
 
 ```bash
 apptainer exec --nv --contain \
-  --bind /var/cache/isaac/kit:$HOME/.cache/kit:rw \
+  --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
   --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
   --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
   --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
   --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
   --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
+  --bind /projects:$HOME/Documents:rw \
+  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif \
   /bin/bash -lc "cd /isaac-sim && ./isaac-sim.sh --headless"
 ```
@@ -106,13 +109,14 @@ For remote access via web browser:
 ```bash
 apptainer exec --nv --contain \
   --env WEBRTC_ENABLE=1 \
-  --bind /var/cache/isaac/kit:$HOME/.cache/kit:rw \
+  --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
   --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
   --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
   --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
   --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
   --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
   --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
+  --bind /projects:$HOME/Documents:rw \
   --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
   /containers/isaac_ros2_humble.sif \
   /bin/bash -lc "cd /isaac-sim && ./isaac-sim.sh --webrtc_server=128.143.69.60 --webrtc_port=9090"
