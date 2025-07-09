@@ -1,156 +1,121 @@
-# Running ROS2 in Docker Containers
-This guide is for using the Isaac Sim's tutorial humble_ws
+# One-Time Setup: Tutorials Project for Isaac Sim + ROS 2
+
+This guide covers creating a dedicated `tutorials` project under `/projects`, complete with an ext3 overlay image and a cloned Isaac Sim ROS Workspace repository for running the NVIDIA tutorials.
 
 ---
-## Prerequisites (Host Setup)
 
-Ensure you have completed the basic setup:
-- Built the container: `/containers/isaac-ros2-humble.sif`
-- Created required host directories: `/var/cache/isaac/`, `/persistent/isaac/asset_root/`
+## Prerequisites
 
-### Clone the Isaac Sim ROS 2 Workspace
+* Apptainer container image: `/containers/isaac_ros2_humble.sif`
+* Host directory `/projects` is bind-mounted to `$HOME/Documents` inside the container
+* User is in the `isaac` group and has write permissions on `/projects`
 
-Place the official ROS 2 Humble workspace under your projects directory:
+---
+
+## 1. Create the Project Directory
 
 ```bash
-git clone https://github.com/NVIDIA-Omniverse/IsaacSim-ROS-Workspaces.git /projects/IsaacSim-ros_workspaces
+# On the host machine:
+mkdir -p /projects/tutorials
+cd    /projects/tutorials
 ```
 
-You’ll then have:
-
-```
-/projects
-└─ IsaacSim-ros_workspaces
-   └─ humble_ws
-      ├─ src/
-      └─ ...
-```
+* This will map inside the container to `~/Documents/tutorials`.
 
 ---
 
-## 1. Bind-Mount and Enter the Container
-
-Use Apptainer to mount both the workspace and your shared caches or asset root into the SIF:
+## 2. Create an ext3 Overlay Image
 
 ```bash
-apptainer exec --nv \
-  --bind /projects/IsaacSim-ros_workspaces/humble_ws:/root/humble_ws:rw \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
-  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
-  /containers/isaac-ros2-humble.sif \
-  bash
+# Still on the host:
+# Create a 1 GiB overlay file (adjust size if needed)
+dd if=/dev/zero of=isaac_ros_overlay.img bs=1M count=1024
+mkfs.ext3 isaac_ros_overlay.img
 ```
 
-* `/root/humble_ws` is where you’ll build the ROS 2 packages.
-* Caches and asset roots are shared at the same paths you created earlier.
+* `isaac_ros_overlay.img` lets you install project-specific OS/ROS packages without modifying the base container.
 
 ---
 
-## 2. Install Dependencies and Build the Workspace
+## 3. Clone the Isaac Sim ROS Workspace Repository
 
-Inside the container shell:
+```bash
+# Clone directly into your project directory:
+cd /projects/tutorials
+git clone https://github.com/NVIDIA-Omniverse/IsaacSim-ROS-Workspaces.git IsaacSim-ros_workspaces
+# Move into the cloned repo
+cd IsaacSim-ros_workspaces
+# (Optional) Checkout the branch or tag matching your Isaac Sim version
+# For Isaac Sim 4.5.0:
+git checkout IsaacSim-4.5.0
+```
 
-1. **Source ROS 2 and set Fast RTPS profiles**
-
-   ```bash
-   source /opt/ros/humble/setup.bash
-   export FASTRTPS_DEFAULT_PROFILES_FILE=/exts/isaacsim.ros2.bridge/humble/config/default_profiles.xml
-   ```
-2. **Install any missing system or ROS 2 deps**
-
-   ```bash
-   rosdep update
-   rosdep install --from-paths /root/humble_ws/src \
-                  --ignore-src --rosdistro humble -y
-   ```
-3. **Build with colcon**
-
-   ```bash
-   cd /root/humble_ws
-   colcon build --symlink-install
-   source install/local_setup.bash
-   ```
+* This creates `/projects/tutorials/IsaacSim-ros_workspaces`, containing `humble_ws` with all tutorial packages tuned for your Isaac Sim version.
 
 ---
 
-## 3. Launch Isaac Sim with the ROS 2 Bridge
+## 4. Build the Workspace Inside the Container
 
-Exit back to your host terminal and run (example headless):
+Run this single command from your host shell:
 
 ```bash
 apptainer exec --nv \
-  --bind /projects/IsaacSim-ros_workspaces/humble_ws:/root/humble_ws:rw \
-  --bind /var/cache/isaac/kit:/root/.cache/kit:rw \
-  --bind /var/cache/isaac/ov:/root/.cache/ov:rw \
-  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
-  --env FASTRTPS_DEFAULT_PROFILES_FILE=/exts/isaacsim.ros2.bridge/humble/config/default_profiles.xml \
-  /containers/isaac-ros2-humble.sif \
-  ./isaac-sim.sh \
-    --headless \
-    --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge
+  --overlay /projects/tutorials/isaac_ros_overlay.img \
+  --bind    /projects/tutorials/IsaacSim-ros_workspaces:/home/dev/ros_ws:rw \
+  /containers/isaac_ros2_humble.sif \
+  bash -lc "
+    set -e
+    # 1. Source ROS 2 Humble
+    source /opt/ros/humble/setup.bash
+
+    # 2. Navigate to the tutorial workspace
+    cd /home/dev/ros_ws/humble_ws
+
+    # 3. Install dependencies with rosdep
+    rosdep update
+    rosdep install -i --from-path src --rosdistro humble -y
+
+    # 4. Build with colcon
+    colcon build --event-handlers console_direct+
+
+    # 5. Source the newly built workspace
+    source install/local_setup.bash
+
+    echo '✅ Tutorial workspace built and sourced'
+  "
 ```
 
-* Omit `--headless` and add `--bind /tmp/.X11-unix:/tmp/.X11-unix --env DISPLAY=$DISPLAY` for in-lab GUI
-* Or add `--env WEBRTC_ENABLE=1 -p 9090:9090` for remote WebRTC
+* `--overlay` mounts your `isaac_ros_overlay.img`; `--bind` maps the cloned repo.
 
 ---
 
-## 4. Verify the Bridge
+## 5. Launch Isaac Sim with the Tutorials
 
-In another terminal, exec into the same container (or any host with ROS 2 Humble) and run:
-
-```bash
-ros2 topic echo /clock
-```
-
-Seeing clock messages confirms that Isaac Sim’s ROS 2 Bridge is correctly connected to your `humble_ws` workspace.
-
-## Troubleshooting
-
-### Common Issues
-
-1. **No ROS 2 topics visible:**
-   - Ensure `FASTRTPS_DEFAULT_PROFILES_FILE` is set
-   - Check that Isaac Sim launched with the bridge extension
-
-2. **Permission errors:**
-   - Verify host directory permissions
-   - Check that bind mounts are writable (`:rw`)
-
-3. **Build failures:**
-   - Update rosdep: `rosdep update`
-   - Check for missing dependencies: `rosdep install --from-paths src --ignore-src -y`
-
-4. **Graphics issues:**
-   - Ensure `--nv` flag is used for GPU access
-   - For GUI mode, verify X11 forwarding is working
-
-### Performance Tips
-
-1. **Use symlink installs:** `colcon build --symlink-install`
-2. **Parallel builds:** `colcon build --parallel-workers 4`
-3. **Selective building:** `colcon build --packages-select package_name`
-4. **Cache directories:** Always bind mount cache directories to avoid re-downloading
-
-### Installing Additional ROS 2 Packages
-
-The container includes ROS 2 Humble Base. To add GUI tools like RViz:
+Once built, start Isaac Sim so it loads the ROS 2 bridge and your tutorial packages:
 
 ```bash
-# Inside the container
-apt-get update && apt-get install -y \
-  ros-humble-rviz2 \
-  ros-humble-rqt \
-  ros-humble-demo-nodes-cpp \
-  ros-humble-demo-nodes-py
-
-# Or install via overlays for persistence
+apptainer exec --nv \
+  --overlay /projects/tutorials/isaac_ros_overlay.img \
+  --bind    /projects/tutorials/IsaacSim-ros_workspaces:/home/dev/ros_ws:rw \
+  /containers/isaac_ros2_humble.sif \
+  bash -lc "
+    source /opt/ros/humble/setup.bash
+    source /home/dev/ros_ws/humble_ws/install/local_setup.bash
+    cd /isaac-sim
+    ./isaac-sim.sh --headless \
+      --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge
+  "
 ```
 
-## Next Steps
+* Omit `--headless` for GUI mode (use X11/VirtualGL forwarding).
 
-- Explore the Isaac Sim ROS 2 examples in the workspace
-- Create your own robot simulation packages
-- Integrate with other ROS 2 tools like RViz, MoveIt, or Nav2
-- Set up continuous integration with your custom packages
+---
+
+## Notes
+
+* **Overlay size**: Increase `count=1024` if you add many packages.
+* **Permissions**: If you hit `EACCES`, ensure `/projects/tutorials` is group-writable by `isaac`.
+
+---
+
+You’re all set! Repeat these steps for any new research project by replacing `tutorials` with your project name. Happy simulating!
