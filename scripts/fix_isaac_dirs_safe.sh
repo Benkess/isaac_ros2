@@ -36,14 +36,24 @@ echo "🔍 Checking Isaac Sim directories..."
 check_and_fix() {
   local path="$1"
   local stat_out
-  stat_out=$(stat -c "%U %G %a" "$path")
-  read -r owner group mode <<< "$stat_out"
+
+  if ! stat_out=$(stat -c "%U %G %a" "$path" 2>/dev/null); then
+    echo "🚫 Cannot access $path (permission denied or not found)"
+    return
+  fi
+
+  read -r owner group perms <<< "$stat_out"
 
   # Normalize mode to 4-digit form
-  [[ "${#mode}" -lt 4 ]] && mode="0$mode"
+  [[ "${#perms}" -lt 4 ]] && perms="0$perms"
 
-  if [[ "$owner" != "$TARGET_USER" || "$group" != "$TARGET_GROUP" || "$mode" != "$TARGET_MODE" ]]; then
-    echo "❗ $path: [$owner:$group $mode] → [$TARGET_USER:$TARGET_GROUP $TARGET_MODE]"
+  # Compute expected string
+  local expected="$TARGET_USER:$TARGET_GROUP $TARGET_MODE"
+  local actual="$owner:$group $perms"
+
+  # Check all conditions
+  if [[ "$owner" != "$TARGET_USER" || "$group" != "$TARGET_GROUP" || "$perms" != "$TARGET_MODE" ]]; then
+    echo "❗ $path: [$actual] → [$expected]"
     if $FIX; then
       sudo chown "$TARGET_USER:$TARGET_GROUP" "$path"
       sudo chmod "$TARGET_MODE" "$path"
@@ -58,9 +68,10 @@ for root in "${ROOT_DIRS[@]}"; do
     echo "⚠️  Skipping missing root: $root"
     continue
   fi
-  find "$root" -type d -print0 | while IFS= read -r -d '' dir; do
+  find "$root" -type d -print0 2>/dev/null | while IFS= read -r -d '' dir; do
     check_and_fix "$dir"
   done
+  check_and_fix "$root"
 done
 
 if ! $FIX; then
