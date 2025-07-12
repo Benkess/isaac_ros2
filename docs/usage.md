@@ -127,6 +127,14 @@ apptainer exec --nv --contain \
 #### WebRTC Client Setup
 
 > **Note:**
+> - Before running a livestream client. you must have the Isaac Sim app loaded and ready. 
+> 
+>   - It may take a few minutes for Isaac Sim to completely load.
+> 
+>   - To confirm this, look out for this line in the console or the logs:
+>   
+>     ```Isaac Sim Full Streaming App is loaded.```
+> 
 > - For local use, launch the GUI instead.
 > - Remote use requires access from UVA subnets to access cral.cs.virginia.edu (e.g., eduroam, UVA Anywhere VPN, or wired CS network).
 
