@@ -12,27 +12,27 @@ This guide covers how to use the Isaac Sim container.
 ---
 
 ## Launch Modes
-This section lists different ways of launching Isaac Sim. These commands are designed to be exicuted from the terminal in any directory on the host system.
 
-For an explanation of the launch modes see [Isaac Sim Modes](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/install_faq.html#isaac-sim-launch-scripts).
+This section lists different ways of launching Isaac Sim. These commands are designed to be executed from the terminal in any directory on the host system.
 
-> Note: 
-> See **[Run Launch Script](/docs/script_docs/isaac_container.md)** for an automated script of these commands.
+For an explanation of the launch modes, see [Isaac Sim Modes](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/install_faq.html#isaac-sim-launch-scripts).
 
-> Note: 
-> These commands assume host setup has been completed by the admin as per the **[Host Setup Guide](/docs/host_setup.md)**.
+> **Note:**
+> - See **[Run Launch Script](/docs/script_docs/isaac_container.md)** for an automated script of these commands.
+> - These commands assume host setup has been completed by the admin as per the **[Host Setup Guide](/docs/host_setup.md)**.
 
-### Notes
+### General Notes
 
-* Host-side directories (`/var/cache/isaac/...`, `/projects`, etc.) must exist.
-* You must belong to the `isaac` group.
-* The container includes environment variables for EULA and data consent.
-* Isaac Sim can run in headless, GUI, or WebRTC modes with ROS 2 integration.
+- Host-side directories (`/var/cache/isaac/...`, `/projects`, etc.) must exist.
+- You must belong to the `isaac` group.
+- The container includes environment variables for EULA and data consent.
+- Isaac Sim can run in headless, GUI, or WebRTC modes with ROS 2 integration.
 
 ---
 
 ### Interactive Bash Session
-This workflow allows you to interact with Isaac Sim similarly to the docs on thier website.
+
+This workflow allows you to interact with Isaac Sim similarly to the official documentation.
 
 ```bash
 apptainer shell --nv --contain \
@@ -48,14 +48,15 @@ apptainer shell --nv --contain \
   /containers/isaac_ros2_humble.sif
 ```
 
-Once inside:
+Once inside the container:
 
 ```bash
 cd /isaac-sim
 ./isaac-sim.sh
 ```
 
-> Note: For other launch scripts see [Isaac Sim Modes](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/install_faq.html#isaac-sim-launch-scripts)
+> For other launch scripts, see [Isaac Sim Modes](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/install_faq.html#isaac-sim-launch-scripts)
+
 ---
 
 ### Local GUI Mode (X11 Forwarding)
@@ -83,38 +84,11 @@ apptainer exec --nv --contain \
 
 ### Headless Mode (Servers/Remote)
 
-For headless operation on servers or remote machines:
+#### Headless with WebRTC Streaming Client
 
-```bash
-apptainer exec --nv --contain \
-  --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
-  --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
-  --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
-  --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
-  --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
-  --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
-  --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
-  --bind /projects:$HOME/Documents:rw \
-  --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
-  /containers/isaac_ros2_humble.sif \
-  /bin/bash -lc "cd /isaac-sim && ./isaac-sim.sh --headless"
-```
+Use these commands to launch Isaac Sim in headless mode with WebRTC streaming:
 
----
-
-### Remote GUI Mode (WebRTC)
-
-> **Note:**
-> - For local use, launch the GUI instead.
-> - Remote use requires access from UVA subnets to access cral.cs.virginia.edu (e.g., eduroam, UVA Anywhere VPN, or wired CS network).
-
----
-
-#### Launch Isaac Sim in Headless Mode (WebRTC)
-
-The following commands can be used in the terminal to launch Isaac Sim in headless mode with WebRTC streaming:
-
-**Basic Headless with WebRTC Streaming Client:**
+**Basic Headless:**
 ```bash
 apptainer exec --nv --contain \
   --env WEBRTC_ENABLE=1 \
@@ -131,7 +105,7 @@ apptainer exec --nv --contain \
   /bin/bash -lc "cd /isaac-sim && ./runheadless.sh"
 ```
 
-**Full App with WebRTC Streaming Client:**
+**Full App:**
 ```bash
 apptainer exec --nv --contain \
   --env WEBRTC_ENABLE=1 \
@@ -152,6 +126,10 @@ apptainer exec --nv --contain \
 
 #### WebRTC Client Setup
 
+> **Note:**
+> - For local use, launch the GUI instead.
+> - Remote use requires access from UVA subnets to access cral.cs.virginia.edu (e.g., eduroam, UVA Anywhere VPN, or wired CS network).
+
 1. **Download Isaac Sim WebRTC Streaming Client**
    - Download from the [Latest Release](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/download.html#isaac-sim-latest-release) section for your platform.
    - More information is on the [Livestream Isaac Sim Docs](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/manual_livestream_clients.html).
@@ -169,7 +147,6 @@ apptainer exec --nv --contain \
    - In the WebRTC app, enter the IP address in the 'Server' field and press Connect.
 
 ---
-
 
 ## ROS 2 Integration
 
