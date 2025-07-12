@@ -104,17 +104,17 @@ apptainer exec --nv --contain \
 
 ### Remote GUI Mode (WebRTC)
 
-> Note:
+> **Note:**
 > - For local use, launch the GUI instead.
-> - Remote use requires access from UVA subnets to access cral.cs.virginia.edu.
->   -  i.e. eduroam | UVA Anywhere VPN | wired CS network
-> 
+> - Remote use requires access from UVA subnets to access cral.cs.virginia.edu (e.g., eduroam, UVA Anywhere VPN, or wired CS network).
 
-**Launch Isaac Sim in headless mode:**
+---
 
-> The following commands can be used in the terminal
+#### Launch Isaac Sim in Headless Mode (WebRTC)
 
-Isaac Sim headless with Isaac Sim WebRTC Streaming Client service:
+The following commands can be used in the terminal to launch Isaac Sim in headless mode with WebRTC streaming:
+
+**Basic Headless with WebRTC Streaming Client:**
 ```bash
 apptainer exec --nv --contain \
   --env WEBRTC_ENABLE=1 \
@@ -131,7 +131,7 @@ apptainer exec --nv --contain \
   /bin/bash -lc "cd /isaac-sim && ./runheadless.sh"
 ```
 
-Isaac Sim headless full app with Isaac Sim WebRTC Streaming Client service:
+**Full App with WebRTC Streaming Client:**
 ```bash
 apptainer exec --nv --contain \
   --env WEBRTC_ENABLE=1 \
@@ -148,32 +148,28 @@ apptainer exec --nv --contain \
   /bin/bash -lc "cd /isaac-sim && ./isaac-sim.streaming.sh"
 ```
 
-**For remote access via WebRTC:**
-> Note: 
-> More information is on the [Livestream Isaac Sim Docs](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/manual_livestream_clients.html)
+---
 
+#### WebRTC Client Setup
 
-1) Download **Isaac Sim WebRTC Streaming Client**
+1. **Download Isaac Sim WebRTC Streaming Client**
+   - Download from the [Latest Release](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/download.html#isaac-sim-latest-release) section for your platform.
+   - More information is on the [Livestream Isaac Sim Docs](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/manual_livestream_clients.html).
 
-  - Download Isaac Sim WebRTC Streaming Client from the [Latest Release](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/download.html#isaac-sim-latest-release) section for your platform.
+2. **Launch the WebRTC App**
 
-2) Launch WebRTC app
+3. **Find the Host IP Address**
+   > **Tip:**
+   > In a terminal on the UVA CS server, run:
+   > ```bash
+   > host cral
+   > ```
 
-3) Find the host IP address
-  > **Note:**
-  > 
-  > In a terminal on the UVA CS Sever run:
-  > ```bash
-  >   host cral
-  > ```
-
-4) Connect
-
-  In the WebRTC app:
-  - Enter the IP address in 'Server'
-  - Press Connect
+4. **Connect**
+   - In the WebRTC app, enter the IP address in the 'Server' field and press Connect.
 
 ---
+
 
 ## ROS 2 Integration
 
