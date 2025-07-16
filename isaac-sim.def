@@ -5,40 +5,53 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     ISAAC_VERSION=4.5.0
 
 %environment
+    # Accept NVIDIA Omniverse EULA & privacy terms
     export ACCEPT_EULA=Y
     export PRIVACY_CONSENT=Y
-    # Path to the embedded Isaac Sim installation
+
+    # Where the Isaac Sim package lives inside the container
     export ISAAC_SIM_PACKAGE_PATH=/isaac-sim
-    # Use the bundled Humble bridge libraries
+
+    # ROS-2 bridge libs (will be available if you bind-mount a ROS workspace)
     export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-    # Optional: point to a custom Fast-DDS XML profile
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ISAAC_SIM_PACKAGE_PATH/exts/isaacsim.ros2.bridge/humble/lib"
+
+    # (Optional) custom Fast-DDS profile
     # export FASTRTPS_DEFAULT_PROFILES_FILE=/root/.ros/fastdds.xml
-    # Add the ROS 2 bridge lib path
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ISAAC_SIM_PACKAGE_PATH/exts/isaacsim.ros2.bridge/humble/lib
+
+    # Persistent Nucleus root (bind-mount /persistent/isaac/asset_root at runtime)
     export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
 
 %post
-    # Set non-interactive mode and timezone
+    set -eux
+
+    # Configure timezone non-interactively
     export DEBIAN_FRONTEND=noninteractive
     export TZ=America/New_York
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-    
-    # Install base utilities, Python, and build tools
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+    echo $TZ > /etc/timezone
+
+    # Update and install
     apt-get update && apt-get install -y \
-      curl gnupg2 lsb-release software-properties-common \
+      curl gnupg2 lsb-release \
+      software-properties-common \
       python3-pip python3-venv \
       locales build-essential \
-    && locale-gen en_US.UTF-8 \
+      tzdata \
+    && locale-gen en_US.UTF-8 || true \
     && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
-# Clean up apt cache
-    rm -rf /var/lib/apt/lists/*
+    # (Optional) pip packages for your custom simulation scripts
+    # pip3 install --no-cache-dir <your-package-list>
 
-%runscript
+    # Clean up
+    rm -rf /var/lib/apt/lists/*
+%startscript
+    # By default, drop into the Isaac Sim launcher
     exec /bin/bash -lc "\
-      cd $ISAAC_SIM_PACKAGE_PATH && \
-      ./isaac-sim.sh \
-        "$@""
+      cd /isaac-sim && \
+      ./isaac-sim.sh \"\$@\" \
+    "
 
 %labels
     Maintainer mxk3rz
@@ -50,7 +63,11 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
       • Python & NVIDIA SDKs
 
     Use `--overlay` to inject project‐specific packages.
-    Usage example:
+
+    Build:
+      apptainer build isaac-sim.sif isaac-sim.def
+
+    Usage example (GPU + bind-mounts):
       apptainer shell --nv --contain \
         --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
         --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
@@ -61,4 +78,9 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
         --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
         --bind /projects:$HOME/Documents:rw \
         --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
-        /containers/isaac-sim_4.5.0.sif
+        isaac-sim.sif
+
+    Then inside the container:
+      cd /isaac-sim
+      ./isaac-sim.sh [...]
+
