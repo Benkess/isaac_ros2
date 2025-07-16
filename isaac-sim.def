@@ -1,0 +1,64 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
+
+%arguments
+    ISAAC_VERSION=4.5.0
+
+%environment
+    export ACCEPT_EULA=Y
+    export PRIVACY_CONSENT=Y
+    # Path to the embedded Isaac Sim installation
+    export ISAAC_SIM_PACKAGE_PATH=/isaac-sim
+    # Use the bundled Humble bridge libraries
+    export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    # Optional: point to a custom Fast-DDS XML profile
+    # export FASTRTPS_DEFAULT_PROFILES_FILE=/root/.ros/fastdds.xml
+    # Add the ROS 2 bridge lib path
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ISAAC_SIM_PACKAGE_PATH/exts/isaacsim.ros2.bridge/humble/lib
+    export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
+
+%post
+    # Set non-interactive mode and timezone
+    export DEBIAN_FRONTEND=noninteractive
+    export TZ=America/New_York
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    
+    # Install base utilities, Python, and build tools
+    apt-get update && apt-get install -y \
+      curl gnupg2 lsb-release software-properties-common \
+      python3-pip python3-venv \
+      locales build-essential \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+# Clean up apt cache
+    rm -rf /var/lib/apt/lists/*
+
+%runscript
+    exec /bin/bash -lc "\
+      cd $ISAAC_SIM_PACKAGE_PATH && \
+      ./isaac-sim.sh \
+        "$@""
+
+%labels
+    Maintainer mxk3rz
+    Version v0.0.0
+
+%help
+    This container bundles:
+      • Isaac Sim & Omniverse Runtime
+      • Python & NVIDIA SDKs
+
+    Use `--overlay` to inject project‐specific packages.
+    Usage example:
+      apptainer shell --nv --contain \
+        --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
+        --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
+        --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
+        --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
+        --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
+        --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
+        --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
+        --bind /projects:$HOME/Documents:rw \
+        --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
+        /containers/isaac-sim_4.5.0.sif
