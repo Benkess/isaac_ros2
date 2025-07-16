@@ -1,0 +1,47 @@
+BootStrap: docker
+From: osrf/ros:humble-desktop-full-jammy
+
+%labels
+    Maintainer mxk3rz
+    Description multi-user ROS 2 Humble container for Isaac Sim integration
+    Version v0.0.0
+
+%environment
+    # ROS 2 defaults
+    export ROS_DISTRO=humble
+    export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    # Optional: 
+    # export ROS_DOMAIN_ID=0
+    # export FASTRTPS_DEFAULT_PROFILES_FILE=/ros2_ws/fastdds.xml
+    # export COLCON_LOG_PATH=/ros2_ws/logs
+
+%post
+    # Basic utilities and ROS tooling
+    apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        curl \
+        lsb-release \
+        gnupg2 \
+        locales \
+        python3-pip \
+        python3-colcon-common-extensions \
+        python3-rosdep \
+        && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+    # Locales for ROS
+    locale-gen en_US en_US.UTF-8
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+    # Initialize rosdep
+    rosdep init || true
+    rosdep update
+
+%runscript
+    echo "[ROS 2 Container] Starting ROS 2 Humble shell..."
+    if [ -f /opt/ros/$ROS_DISTRO/setup.bash ]; then
+        source /opt/ros/$ROS_DISTRO/setup.bash
+    fi
+    if [ -f /ros2_ws/install/local_setup.bash ]; then
+        source /ros2_ws/install/local_setup.bash
+    fi
+    exec "$@"
