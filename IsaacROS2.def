@@ -5,12 +5,26 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     ISAAC_VERSION=4.5.0
 
 %environment
+    # (Optional) Accept NVIDIA Omniverse EULA & privacy terms
     export ACCEPT_EULA=Y
     export PRIVACY_CONSENT=Y
-    export ROS_DISTRO=humble
-    export LD_LIBRARY_PATH=/exts/isaacsim.ros2.bridge/humble/lib:$LD_LIBRARY_PATH
-    export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
-    export ROS_SETUP=/opt/ros/$ROS_DISTRO/setup.bash
+
+    # (Optional) Where the Isaac Sim package lives inside the container
+    export ISAAC_SIM_PACKAGE_PATH=/isaac-sim
+
+    # (Optional) ROS-2 bridge libs (will be available if you bind-mount a ROS workspace)
+    # export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    # export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ISAAC_SIM_PACKAGE_PATH/exts/isaacsim.ros2.bridge/humble/lib"
+
+    # (Optional) custom Fast-DDS profile
+    # export FASTRTPS_DEFAULT_PROFILES_FILE=/root/.ros/fastdds.xml
+
+    # (Optional) Persistent Nucleus root (bind-mount /persistent/isaac/asset_root at runtime)
+    # export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
+
+    # (Optional) ROS env
+    # export ROS_SETUP=/opt/ros/$ROS_DISTRO/setup.bash
+    # export ROS_DISTRO=humble
 
 %post
     # Set non-interactive mode and timezone
@@ -64,13 +78,4 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
       • Isaac Sim & Omniverse Runtime
       • Python & NVIDIA SDKs
       • ROS 2 Humble Base (ros2 CLI, bags, tf2)
-    Use `--overlay` to inject project‐specific packages, and `--headless` 
-    or WebRTC flags for remote simulation.
-    Usage example:
-      apptainer exec --nv \
-        --overlay ~/projects/projectX/overlay.img \
-        --bind ~/projects/projectX:/home/dev/project \
-        --bind ~/cache/kit:/isaac-sim/kit/cache:rw \
-        --bind ~/cache/ov:/root/.cache/ov:rw \
-        isaac_ros2_humble.sif \
-        --headless
+    Use `--overlay` to inject project‐specific packages.

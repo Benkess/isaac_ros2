@@ -5,22 +5,22 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
     ISAAC_VERSION=4.5.0
 
 %environment
-    # Accept NVIDIA Omniverse EULA & privacy terms
+    # (Optional) Accept NVIDIA Omniverse EULA & privacy terms
     export ACCEPT_EULA=Y
     export PRIVACY_CONSENT=Y
 
-    # Where the Isaac Sim package lives inside the container
+    # (Optional) Where the Isaac Sim package lives inside the container
     export ISAAC_SIM_PACKAGE_PATH=/isaac-sim
 
-    # ROS-2 bridge libs (will be available if you bind-mount a ROS workspace)
-    export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ISAAC_SIM_PACKAGE_PATH/exts/isaacsim.ros2.bridge/humble/lib"
+    # (Optional) ROS-2 bridge libs (will be available if you bind-mount a ROS workspace)
+    # export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    # export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ISAAC_SIM_PACKAGE_PATH/exts/isaacsim.ros2.bridge/humble/lib"
 
     # (Optional) custom Fast-DDS profile
     # export FASTRTPS_DEFAULT_PROFILES_FILE=/root/.ros/fastdds.xml
 
-    # Persistent Nucleus root (bind-mount /persistent/isaac/asset_root at runtime)
-    export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
+    # (Optional) Persistent Nucleus root (bind-mount /persistent/isaac/asset_root at runtime)
+    # export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
 
 %post
     set -eux
@@ -38,6 +38,7 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
       python3-pip python3-venv \
       locales build-essential \
       tzdata \
+      nano \
     && locale-gen en_US.UTF-8 || true \
     && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
@@ -46,16 +47,10 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
 
     # Clean up
     rm -rf /var/lib/apt/lists/*
-%startscript
-    # By default, drop into the Isaac Sim launcher
-    exec /bin/bash -lc "\
-      cd /isaac-sim && \
-      ./isaac-sim.sh \"\$@\" \
-    "
 
 %labels
     Maintainer mxk3rz
-    Version v0.0.0
+    Version v1.0.0
 
 %help
     This container bundles:
@@ -66,21 +61,3 @@ From: nvcr.io/nvidia/isaac-sim:{{ISAAC_VERSION}}
 
     Build:
       apptainer build isaac-sim.sif isaac-sim.def
-
-    Usage example (GPU + bind-mounts):
-      apptainer shell --nv --contain \
-        --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
-        --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \
-        --bind /var/cache/isaac/pip:$HOME/.cache/pip:rw \
-        --bind /var/cache/isaac/glcache:$HOME/.cache/nvidia/GLCache:rw \
-        --bind /var/cache/isaac/computecache:$HOME/.nv/ComputeCache:rw \
-        --bind /var/cache/isaac/logs:$HOME/.nvidia-omniverse/logs:rw \
-        --bind /var/cache/isaac/data:$HOME/.local/share/ov/data:rw \
-        --bind /projects:$HOME/Documents:rw \
-        --bind /persistent/isaac/asset_root:/persistent/isaac/asset_root:rw \
-        isaac-sim.sif
-
-    Then inside the container:
-      cd /isaac-sim
-      ./isaac-sim.sh [...]
-
