@@ -1,76 +1,68 @@
-# Creating a New Project with an Overlay and Workspace
+# Projects & Overlays
+This describes the recommended approach for creating Isaac Sim or ROS2 Projects using the included containers.
 
-This guide shows you how to set up a self‑contained project under `/projects`, with its own ext3 overlay image and ROS 2 workspace, for use in the Isaac Sim + ROS 2 Apptainer container.
+> **Note:**
+> - See **[ROS2 Projects](/docs/ROS2/ros2_projects.md)** for more detail on ROS2 projects.
 
-## 1. Create the Project Directory
+## Isaac Sim & ROS2 Projects:
+It is recommended that your project directory is binded to the container. This allows you to read, write and exicute from the directory while in the container.
 
+It is also recommended to backup your projects with git.
+
+If you need to modify a container, it is recoomended to use a writable filesystem image overlay.
+
+Optionally, you can store you project in /projects
+
+## Recomended Project Layout:
+For Isaac Sim and ROS2 projects it is recommended to have the following files and directories located in /projects. Note that these are optional and may not all be needed for your project.
+
+- /projects
+    - /ros2_ws
+    - /isaac-sim/documents
+    - ros2_overlay.img
+    - isaac_overlay.img
+
+## Binding a Project Directory:
+
+To bind a project directory use:
 ```bash
-# On the host machine:
-mkdir -p /projects/<your-project>/ros_ws
-cd    /projects/<your-project>
+  --bind    /path/to/<your-project-directory>:/path/to/<your-project-directory>
 ```
 
-* Everything for `your-project` will live under `/projects/your-project`
-* Inside the container this maps to `~/Documents/<your-project>`
-
-## 2. Create an ext3 Overlay Image
-
+Here are some examples:
 ```bash
-# Still in /projects/<your-project>:
-# 1 GiB overlay (adjust size as needed)
-dd if=/dev/zero of=overlay.img bs=1M count=1024
-mkfs.ext3 overlay.img
+apptainer shell --nv --no-mount /l \
+  --bind /projects:/projects:rw \
+  /containers/isaac_ros2_humble.sif
 ```
 
-* `overlay.img` lets you install project‑specific OS/ROS packages without touching the base container.
-
-## 3. Clone the ROS 2 Tutorial Workspace
-
 ```bash
-cd ros_ws
-git clone https://github.com/NVIDIA-Omniverse/IsaacSim-ROS-Workspaces.git humble_ws
+apptainer shell --nv --no-mount /l \
+  --bind /projects/<your-project>/isaac-sim/documents:$HOME/Documents:rw \
+  /containers/isaac-sim.sif
 ```
 
-* This creates the `humble_ws` folder containing the tutorial packages.
-
-## 4. Build the Workspace Inside the Container
-
 ```bash
-apptainer exec --nv \
-  --overlay /projects/<your-project>/overlay.img \
-  --bind    /projects/<your-project>/ros_ws:/home/dev/ros_ws:rw \
-  /containers/isaac_ros2_humble.sif \
-  bash -lc "
-    source /opt/ros/humble/setup.bash
-    cd /home/dev/ros_ws/humble_ws
-    rosdep update
-    rosdep install -i --from-path src --rosdistro humble -y
-    colcon build --event-handlers console_direct+
-    source install/local_setup.bash
-    echo '✅ Workspace built and sourced'
-  "
+apptainer exec --nv --no-mount /l \
+  --overlay /projects/<your-project>/ros2_overlay.img \
+  --bind    /projects/<your-project>/ros_ws:/ros_ws:rw \
+  /containers/ros2_humble.sif \
 ```
 
-* `--overlay` mounts your `overlay.img` as an ext3 layer.
-* `--bind` maps your host `ros_ws` into the container.
+## Filesystem image overlay
+You can create a sparse overlay with fakeroot and a size of 1GB using the apptainer overlay create command with the --sparse, --fakeroot, and --size flags.
+Here's the command:
+Bash
+apptainer overlay create --sparse --fakeroot --size 1024 overlay.img
 
-## 5. Launch Isaac Sim with Your Project
 
-```bash
-apptainer exec --nv \
-  --overlay /projects/<your-project>/overlay.img \
-  --bind    /projects/<your-project>/ros_ws:/home/dev/ros_ws:rw \
-  /containers/isaac_ros2_humble.sif \
-  bash -lc "
-    source /opt/ros/humble/setup.bash
-    source /home/dev/ros_ws/humble_ws/install/local_setup.bash
-    cd /isaac-sim
-    ./isaac-sim.sh --headless --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge
-  "
-```
+--sparse: This flag ensures that the overlay image only takes up disk space as data is written to it, saving you space.
+--fakeroot: This flag is used when you intend to modify the container with the overlay as a non-root user. It makes the overlay image writable in fakeroot mode.
+--size 1024: This specifies the maximum size of the overlay in megabytes. In this case, 1024 MB is equivalent to 1 GB.
+overlay.img: This is the name of the overlay image file that will be created. You can choose any name you like.
+After creating the overlay, you can then use it with your Apptainer container, for example:
+Bash
+apptainer shell --fakeroot --overlay overlay.img ubuntu.sif
 
-* Omit `--headless` if you need the GUI (use X11/VirtualGL forwarding).
 
----
-
-Now you have a clean, reproducible project environment. Repeat these steps for each new research project, adjusting `<your-project>` as needed. Happy simulating!
+This will give you a shell inside the ubuntu.sif container, where you can install software or make changes, and these changes will be persisted in your overlay.img file.

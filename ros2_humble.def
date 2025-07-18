@@ -4,7 +4,7 @@ From: osrf/ros:humble-desktop-full-jammy
 %labels
     Maintainer mxk3rz
     Description multi-user ROS 2 Humble container for Isaac Sim integration
-    Version v1.0.0
+    Version v1.0.1
 
 %post
     # Basic utilities and ROS tooling
@@ -28,5 +28,6 @@ From: osrf/ros:humble-desktop-full-jammy
     locale-gen en_US en_US.UTF-8
     update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
-    rosdep init || true
-    rosdep update || true
+    # Optional rosdep setup: 
+    # rosdep init || true
+    # rosdep update || true

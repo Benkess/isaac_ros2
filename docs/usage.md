@@ -35,6 +35,11 @@ For an explanation of the launch modes, see [Isaac Sim Modes](https://docs.isaac
 This workflow allows you to interact with Isaac Sim similarly to the official documentation.
 
 ```bash
+apptainer shell --nv --no-mount /l \
+  /containers/isaac_ros2_humble.sif
+```
+
+```bash
 apptainer shell --nv --contain \
   --bind /var/cache/isaac/kit:/isaac-sim/kit/cache:rw \
   --bind /var/cache/isaac/ov:$HOME/.cache/ov:rw \

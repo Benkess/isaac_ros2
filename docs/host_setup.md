@@ -8,12 +8,26 @@ This guide covers container setup for the host. It also includes troubleshooting
 The container sets these environment variables:
 
 ```bash
-export ACCEPT_EULA=Y                    # Isaac Sim EULA acceptance
-export PRIVACY_CONSENT=Y               # Privacy consent
-export ROS_DISTRO=humble               # ROS 2 distribution
-export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
-export ROS_SETUP=/opt/ros/humble/setup.bash
-export LD_LIBRARY_PATH=/exts/isaacsim.ros2.bridge/humble/lib:$LD_LIBRARY_PATH
+   # Accept NVIDIA Omniverse EULA & privacy terms
+   export ACCEPT_EULA=Y
+   export PRIVACY_CONSENT=Y
+
+   # Where the Isaac Sim package lives inside the container
+   export ISAAC_SIM_PACKAGE_PATH=/isaac-sim
+```
+
+The user sets these enviroment variables:
+
+```bash
+   # (Optional) ROS-2 bridge libs (will be available if you bind-mount a ROS workspace)
+   export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+   export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ISAAC_SIM_PACKAGE_PATH/exts/isaacsim.ros2.bridge/humble/lib"
+
+   # (Optional) custom Fast-DDS profile
+   export FASTRTPS_DEFAULT_PROFILES_FILE=/root/.ros/fastdds.xml
+
+   # (Optional) Persistent Nucleus root (bind-mount /persistent/isaac/asset_root at runtime)
+   export ISAAC_NUCLEUS_ROOT=/persistent/isaac/asset_root
 ```
 
 ### Custom Environment Variables
@@ -163,6 +177,30 @@ rm -f /containers/isaac_ros2_humble.sif
 
 # Rebuild
 apptainer build /containers/isaac_ros2_humble.sif IsaacROS2.def
+```
+
+```bash
+# Clean build
+sudo rm -f /containers/isaac-sim.sif
+
+# Rebuild
+cd /localtmp/isaac_ros2
+apptainer build --fakeroot isaac-sim.sif isaac-sim.def
+sudo mv isaac-sim.sif /containers/
+sudo chown root:isaac /containers/isaac-sim.sif
+sudo chmod 2755 /containers/isaac-sim.sif
+```
+
+```bash
+# Clean build
+sudo rm -f /containers/ros2_humble.sif
+
+# Rebuild
+cd /localtmp/isaac_ros2
+apptainer build --fakeroot ros2_humble.sif ros2_humble.def
+sudo mv ros2_humble.sif /containers/
+sudo chown root:isaac /containers/ros2_humble.sif
+sudo chmod 2755 /containers/ros2_humble.sif
 ```
 
 ### Performance Optimization
