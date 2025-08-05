@@ -68,7 +68,7 @@ This creates `/projects/tutorials/IsaacSim-ros_workspaces`, containing `humble_w
 
 **Edit Overlay**
 ```bash
-apptainer shell --nv --fakeroot --no-mount /l \
+apptainer shell --nv --fakeroot --no-mount /l,hostfs \
   --overlay /projects/tutorials/ros2_overlay.img \
   --bind    /projects/tutorials/IsaacSim-ros_workspaces/humble_ws:/humble_ws:rw \
   /containers/ros2_humble.sif
@@ -87,13 +87,14 @@ cd /humble_ws
 apptainer shell --nv --userns --no-mount /l \
   --overlay /projects/tutorials/ros2_overlay.img:ro \
   --bind    /projects/tutorials/IsaacSim-ros_workspaces/humble_ws:/humble_ws:rw \
-  /containers/ros2_humble.sif \
+  /containers/ros2_humble.sif
 ```
 Inside the container, run:
 
 ```bash
 source /opt/ros/humble/setup.bash
 cd /humble_ws
+apt-get update
 rosdep install --from-paths src --ignore-src --rosdistro=humble -y
 source /opt/ros/humble/setup.sh
 colcon build

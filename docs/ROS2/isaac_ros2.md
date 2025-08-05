@@ -127,4 +127,41 @@ colcon build
 source install/local_setup.bash
 ```
 
+then:
+```bash
+export FASTRTPS_DEFAULT_PROFILES_FILE=~/.ros/fastdds.xml
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```
+
+
 **Launch Isaac Sim Container**
+```bash
+apptainer shell --nv --no-mount /l \
+  /containers/isaac-sim.sif
+```
+
+```bash
+export FASTRTPS_DEFAULT_PROFILES_FILE=~/.ros/fastdds.xml
+
+# -------------------------------------------- 
+# Settings:
+
+export isaac_sim_package_path=/isaac-sim
+export isaac_sim_ros2_bridge_path=$isaac_sim_package_path/exts/isaacsim.ros2.bridge/humble
+
+# -------------------------------------------- 
+# Setup:
+
+
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+
+# Can only be set once per terminal.
+# Setting this command multiple times will append the internal library path again potentially leading to conflicts
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$isaac_sim_package_path/exts/isaacsim.ros2.bridge/humble/lib
+
+# -------------------------------------------- 
+# Run Isaac Sim
+$isaac_sim_package_path/isaac-sim.sh \
+    --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge \
+    --/rtx/ecoMode/enabled=True
+```
