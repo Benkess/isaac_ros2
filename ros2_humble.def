@@ -4,7 +4,7 @@ From: osrf/ros:humble-desktop-full-jammy
 %labels
     Maintainer mxk3rz
     Description multi-user ROS 2 Humble container for Isaac Sim integration
-    Version v1.0.1
+    Version v1.0.2
 
 %post
     # Basic utilities and ROS tooling
@@ -23,10 +23,15 @@ From: osrf/ros:humble-desktop-full-jammy
         ros-humble-vision-msgs \
         ros-humble-ackermann-msgs \
         --no-install-recommends \
-        && apt-get clean && rm -rf /var/lib/apt/lists/*
+        && apt-get clean && rm -rf /var/lib/apt/lists/* \
+        rm -rf /var/cache/debconf/*
 
     locale-gen en_US en_US.UTF-8
     update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+    # Ensure dpkg's backup file is deleted before image finalization
+    rm -f /var/lib/dpkg/status-old || true
+    dpkg --configure -a || true
 
     # Optional rosdep setup: 
     # rosdep init || true
